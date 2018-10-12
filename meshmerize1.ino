@@ -1,7 +1,12 @@
 //First initializing everything.
 int irSensor[5]={0, 0, 0, 0, 0}; //Defined an array of 5 elements, particularly sensors here.
+<<<<<<< HEAD
 int RightmostSensor = 0;
 int LeftmostSensor = 0;
+=======
+int farRightSensor = 0;
+int farLeftSensor = 0;
+>>>>>>> aman
 irSensor[0] = digitalRead(lineFollowSensor0);
 irSensor[1] = digitalRead(lineFollowSensor1);
 irSensor[2] = digitalRead(lineFollowSensor2);
