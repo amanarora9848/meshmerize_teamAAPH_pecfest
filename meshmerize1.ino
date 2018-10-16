@@ -1,4 +1,5 @@
 //First initializing everything.
+SensorBar mySensor; //Function from the new library.
 int irSensor[5]={0, 0, 0, 0, 0}; //Defined an array of 5 elements, particularly sensors here.
 int farRightSensor = 0;
 int farLeftSensor = 0;
@@ -10,6 +11,8 @@ irSensor[4] = digitalRead(lineFollowSensor4);
 RightmostSensor = analogRead(farRightSensorPin);
 LeftmostSensor = analogRead(farLeftSensorPin);
 
+
+
 void setup() {
   // put your setup code here, to run once:
 
@@ -17,5 +20,5 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  
 }
