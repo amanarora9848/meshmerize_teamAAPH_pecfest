@@ -1,0 +1,224 @@
+int sensor1, sensor2, sensor3, sensor4, sensor5;
+int path[100];
+int index = 0;
+
+int path_length = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(12, INPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  pinMode(6, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
+  Serial.begin(9600);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  move_straight();
+  follow_line();
+  move_left();
+  move_right();
+  u_turn();
+  delay(500);
+  simplify_path();
+
+//  if (digitalRead(sensor3) == HIGH) {
+//    Serial.println("Sensor3 is high.");
+//  }
+//  else if(digitalRead(sensor3) == LOW){
+//    Serial.println("Sensor3 is low.");
+//  }
+
+
+} void move_straight()                                                        /* NO NODE NO INTERSECTION*/
+{
+  sensor1 = digitalRead(12);
+  sensor2 = digitalRead(2);
+  sensor3 = digitalRead(3);
+  sensor4 = digitalRead(4);
+  sensor5 = digitalRead(5);
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == LOW && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    digitalWrite(6, HIGH);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+
+  }
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == LOW && sensor4 == LOW && sensor5 == LOW)
+  {
+    digitalWrite(6, HIGH);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 2;
+    index = index + 1;
+  }
+}
+void move_left()
+{
+  sensor1 = digitalRead(12);
+  sensor2 = digitalRead(2);
+  sensor3 = digitalRead(3);
+  sensor4 = digitalRead(4);
+  sensor5 = digitalRead(5);
+  if (sensor1 == LOW && sensor2 == LOW && sensor3 == HIGH && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    digitalWrite(6, LOW);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 1;
+    index = index + 1;
+  }
+  if (sensor1 == LOW && sensor2 == LOW && sensor3 == LOW && sensor4 == LOW && sensor5 == LOW)
+  {
+    digitalWrite(6, LOW);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 1;
+    index = index + 1;
+  }
+  if (sensor1 == LOW && sensor2 == LOW && sensor3 == HIGH && sensor4 == LOW && sensor5 == LOW)
+  {
+    digitalWrite(6, LOW);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 1;
+    index = index + 1;
+  }
+  if (sensor1 == LOW && sensor2 == LOW && sensor3 == LOW && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    digitalWrite(6, LOW);
+    digitalWrite(9, LOW);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 1;
+    index = index + 1;
+  }
+}
+void move_right()
+{
+  sensor1 = digitalRead(12);
+  sensor2 = digitalRead(2);
+  sensor3 = digitalRead(3);
+  sensor4 = digitalRead(4);
+  sensor5 = digitalRead(5);
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == HIGH && sensor4 == LOW && sensor5 == LOW)
+  {
+    digitalWrite(6, HIGH);
+    digitalWrite(9, LOW);
+    digitalWrite(10, LOW);
+    digitalWrite(11, LOW);
+    path[index] = 3;
+    index = index + 1;
+  }
+}
+void u_turn()
+{
+  sensor1 = digitalRead(12);
+  sensor2 = digitalRead(2);
+  sensor3 = digitalRead(3);
+  sensor4 = digitalRead(4);
+  sensor5 = digitalRead(5);
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == HIGH && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    digitalWrite(6, LOW);
+    digitalWrite(9, HIGH);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, LOW);
+    path[index] = 4;
+    index = index + 1;
+  }
+}
+void follow_line()
+{
+  sensor1 = digitalRead(12);
+  sensor2 = digitalRead(2);
+  sensor3 = digitalRead(3);
+  sensor4 = digitalRead(4);
+  sensor5 = digitalRead(5);
+  if (sensor1 == HIGH && sensor2 == LOW && sensor3 == HIGH && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    analogWrite(6, 70);
+    analogWrite(9, 0);
+    analogWrite(10, 100);
+    analogWrite(11, 0);
+  }
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == HIGH && sensor4 == LOW && sensor5 == HIGH)
+  {
+    analogWrite(6, 100);
+    analogWrite(9, 0);
+    analogWrite(10, 70);
+    analogWrite(11, 0);
+  }
+  if (sensor1 == LOW && sensor2 == HIGH && sensor3 == HIGH && sensor4 == HIGH && sensor5 == HIGH)
+  {
+    analogWrite(6, 50);
+    analogWrite(9, 0);
+    analogWrite(10, 100);
+    analogWrite(11, 0);
+  }
+  if (sensor1 == HIGH && sensor2 == HIGH && sensor3 == HIGH && sensor4 == HIGH && sensor5 == LOW)
+  {
+    analogWrite(6, 100);
+    analogWrite(9, 0);
+    analogWrite(10, 50);
+    analogWrite(11, 0);
+  }
+}
+
+void simplify_path() {
+  path_length = index + 1;
+  if (path_length >= 3)
+  {
+    for (int i = 1; i < index; i++)
+    {
+      if (path[i] == 4)
+      {
+        int total_angle = 160;
+        switch (path[i - 1])
+        {
+          case 1: total_angle = total_angle + 270;
+            break;
+          case 2: total_angle = total_angle + 0;
+            break;
+          case 3: total_angle = total_angle + 90;
+            break;
+        }
+        switch (path[i + 1])
+        {
+          case 1: total_angle = total_angle + 270;
+            break;
+          case 2: total_angle = total_angle + 0; //basic techniques for controlling DC motors and make two example through which we will learn how to control DC motors using the L298N driver and the Arduino board.
+            break;
+          case 3: total_angle = total_angle + 90; //basic techniques for controlling DC motors and make two example through which we will learn how to control DC motors using the L298N driver and the Arduino board.
+            break;
+        }
+        total_angle = total_angle % 360; //basic techniques for controlling DC motors and make two example through which we will learn how to control DC motors using the L298N driver and the Arduino board.
+        switch (total_angle)
+        {
+          case 0: path[path_length - 3] = 2;
+            break;
+          case 90: path[path_length - 3] = 3;
+            break;
+          case 160: path[path_length - 3] = 4;
+            break;
+          case 270: path[path_length - 3] = 1;
+            break;
+        }
+        path_length = path_length - 2;
+      }
+    }
+  }
+}
+

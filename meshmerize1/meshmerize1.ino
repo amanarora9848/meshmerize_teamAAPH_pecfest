@@ -1,7 +1,6 @@
-
 //PID controls the robot and aligns it according to the line.
 //PID - Proportional Integral Derivative
-//Two paths, one is the path running on by bot, and one is the desired one. Error b/w them is controlled by adjusting PID constants. How much you need to turn to come to setpoint, desired line. (Motors may not be well tuned). D is the parameter goint to make it damp such that it comes to setpoint.
+//Two path/'s, one is the path running on by bot, and one is the desired one. Error b/w them is controlled by adjusting PID constants. How much you need to turn to come to setpoint, desired line. (Motors may not be well tuned). D is the parameter goint to make it damp such that it comes to setpoint.
 //Hence, three constants, Kp, Ki and Kd : proportional, integral and Derivative.
 //position records position of bot.
 //On line
@@ -10,16 +9,18 @@
 #define l2 3
 #define r1 4
 #define r2 5
-#define enl A4
-#define enr A5
-int irpin[5] = {6, 7, 8, 9, 10};
+#define power 13
+#define enl 6
+#define enr 9
+int irpin[5] = {11, 7, 8, 12, 10};
 int a[5];
 
 
 int last_proportional = 0;
 int integral = 0;
 
-char select_turn(unsigned char, unsigned char, unsigned char);
+
+char select_turn(unsigned char found_left, unsigned char found_right, unsigned char found_straight);
 int mod(int v); //Absolute value
 int set_motors(int a, int b);
 void turn(char dir);
@@ -39,6 +40,10 @@ void setup() {
   for (int i = 0; i < 5; i++) {
     pinMode(irpin[i], INPUT);
   }
+  pinMode(power, OUTPUT);
+  pinMode(power, HIGH);
+  pinMode(enl, OUTPUT);
+  pinMode(enr, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -48,11 +53,11 @@ void loop() {
   set_motors(100, 100);
   delay(15); //Let the bot move a bit forward so as to facilitate the motors to turn the bot properly.
   //Whether the bot has found any left, right or straight turn. Turn parameters.
+  unsigned char found_left, found_right, found_straight;
   unsigned char fount_left = 0;
   unsigned char fount_right = 0;
   unsigned char fount_straight = 0;
   //Whenever intersections at right angles.
-  unsigned char found_left, found_right, found_straight;
   readline();
   if (a[0] == HIGH) {
     found_left = 1;
