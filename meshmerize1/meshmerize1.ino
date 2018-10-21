@@ -1,18 +1,19 @@
 //PID controls the robot and aligns it according to the line.
 //PID - Proportional Integral Derivative
-//Two path/'s, one is the path running on by bot, and one is the desired one. Error b/w them is controlled by adjusting PID constants. How much you need to turn to come to setpoint, desired line. (Motors may not be well tuned). D is the parameter goint to make it damp such that it comes to setpoint.
+//Two path/'s, one is the path running on by bot, and one is the desired one. Error b/w them is controlled by adjusting PID constants. 
+//How much you need to turn to come to setpoint, desired line. (Motors may not be well tuned). D is the parameter goint to make it damp such that it comes to setpoint.
 //Hence, three constants, Kp, Ki and Kd : proportional, integral and Derivative.
 //position records position of bot.
 //On line
 //Code for black line following maze solving bot, without memory.
-#define l1 2
-#define l2 3
-#define r1 4
-#define r2 5
+#define l1 6
+#define l2 9
+#define r1 10
+#define r2 11
 #define power 13
-#define enl 6
-#define enr 9
-int irpin[5] = {11, 7, 8, 12, 10};
+//#define enl 6
+//#define enr 9
+
 int a[5];
 
 
@@ -33,17 +34,18 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(l1, OUTPUT);
   pinMode(l2, OUTPUT);
+
   pinMode(r1, OUTPUT);
   pinMode(r2, OUTPUT);
-  pinMode(enl, OUTPUT);
-  pinMode(enr, OUTPUT);
-  for (int i = 0; i < 5; i++) {
-    pinMode(irpin[i], INPUT);
-  }
+  //pinMode(enl, OUTPUT);
+  //pinMode(enr, OUTPUT);
+  pinMode(12, INPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
   pinMode(power, OUTPUT);
   pinMode(power, HIGH);
-  pinMode(enl, OUTPUT);
-  pinMode(enr, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -96,12 +98,12 @@ void PID() {
 
     power_difference = proportional * Kp + integral * Ki + derivative * Kd;
     //Kd almost the same as Ki, 10% of it, and Ki is 0.1% of it.
-    const int max = 250; //max speed of motor.
+    const int max = 150; //max speed of motor.
     if (power_difference > max) {
       power_difference = max;
     }
     if (power_difference < -max) {
-      power_difference = -1 * max;
+      power_difference = (-1 * max);
     }
     if (power_difference < 0) {
       //left turn
@@ -121,7 +123,7 @@ void PID() {
     if (a[0] == LOW && a[1] == LOW && a[2] == LOW && a[3] == LOW && a[4] == LOW) {
       return;
     }
-    else if (a[0] == LOW || a[4] == LOW) {
+    else if (a[0] == HIGH || a[4] == HIGH) {
       return;
     }
   }
@@ -130,22 +132,24 @@ void PID() {
 int readline() {
   //It stores the value of ir sensor into an array a[5];
   //int v is a value which stores weighted mean of all values in array, defines a central line from which we are giving a weightage of 1000, line is from a[4], rightmost, each sensor's value os multiplied by 1000, continuous till leftmost end, and this is divided by the total sum value of the 5 inputs, returned by readline function.
-  for (int i = 0; i < 5; i++) {
-    a[i] = digitalRead(6 + i);
-  }
+  a[0] = digitalRead(12);
+  a[1] = digitalRead(2);
+  a[2] = digitalRead(3);
+  a[3] = digitalRead(4);
+  a[4] = digitalRead(5);
   int v;
-  v = (0 * a[0] + 1000 * a[1] + 2000 * a[2] + 3000 * a[3] + 4000 * a[4]) / (a[0] + a[1] + a[2] + a[3] + a[4]);
+  v = (4000 * a[0] + 3000 * a[1] + 2000 * a[2] + 1000 * a[3] + 0 * a[4]) / (a[0] + a[1] + a[2] + a[3] + a[4]);
   Serial.println(a[4]);
   return v;
 }
 
 int stop() {
-  analogWrite(enl, 255);
-  analogWrite(enr, 255);
-  digitalWrite(l1, HIGH);
-  digitalWrite(l2, HIGH);
-  digitalWrite(r1, HIGH);
-  digitalWrite(r2, HIGH);
+  //analogWrite(enl, 255);
+  //analogWrite(enr, 255);
+  analogWrite(l1, 255);
+  analogWrite(l2, 255);
+  analogWrite(r1, 255);
+  analogWrite(r2, 255);
 }
 
 char select_turn(unsigned char found_left, unsigned char found_right, unsigned char found_straight) {
@@ -167,16 +171,16 @@ char select_turn(unsigned char found_left, unsigned char found_right, unsigned c
 void turn(char dir) {
   switch (dir) {
     case 'L':
-      set_motors(-250, 250);
-      delay(200); //Align it to the line perpendicular to it, subject to change, all of these. Will depend on testing.
+      set_motors(-150, 150);
+      //delay(200); //Align it to the line perpendicular to it, subject to change, all of these. Will depend on testing.
       break;
     case 'R':
-      set_motors(250, -250);
-      delay(200);
+      set_motors(150, -150);
+      //delay(200);
       break;
     case 'B':
-      set_motors(250, -250);
-      delay(420);
+      set_motors(150, -150);
+      //delay(420);
       break;
     case 'S':
       break;
@@ -189,39 +193,39 @@ int set_motors(int l, int r) {
   Serial.println(r);
   Serial.println(l);
   if (l > 0 && r > 0) {
-    analogWrite(enl, mod(l));
-    analogWrite(enr, mod(r));
-    digitalWrite(l1, HIGH);
-    digitalWrite(l2, LOW);
-    digitalWrite(r1, HIGH);
-    digitalWrite(r2, LOW);
+    //analogWrite(enl, mod(l));
+    //analogWrite(enr, mod(r));
+    analogWrite(l1, mod(l));
+    analogWrite(l2, 0);
+    analogWrite(r1, mod(r));
+    analogWrite(r2, 0);
     //Go straight
   }
   else if (l < 0 && r > 0) {
-    analogWrite(enl, mod(l));
-    analogWrite(enr, mod(r));
-    digitalWrite(l1, HIGH);
-    digitalWrite(l2, LOW);
-    digitalWrite(r1, LOW);
-    digitalWrite(r2, HIGH);
+    //analogWrite(enl, mod(l));
+    //analogWrite(enr, mod(r));
+    analogWrite(l1, mod(l));
+    analogWrite(l2, 0);
+    analogWrite(r1, 0);
+    analogWrite(r2, mod(r));
     //Go backward.
   }
   else if (l > 0 && r < 0) {
-    analogWrite(enl, mod(l));
-    analogWrite(enr, mod(r));
-    digitalWrite(l1, LOW);
-    digitalWrite(l2, HIGH);
-    digitalWrite(r1, HIGH);
-    digitalWrite(r2, LOW);
+    //analogWrite(enl, mod(l));
+    //analogWrite(enr, mod(r));
+    analogWrite(l1, 0);
+    analogWrite(l2, mod(l));
+    analogWrite(r1, mod(r));
+    analogWrite(r2, 0);
     //Go backward.
   }
   else if (l == 0 && r == 0) {
-    analogWrite(enl, mod(l));
-    analogWrite(enr, mod(r));
-    digitalWrite(l1, HIGH);
-    digitalWrite(l2, HIGH);
-    digitalWrite(r1, HIGH);
-    digitalWrite(r2, HIGH);
+    //analogWrite(enl, mod(l));
+    //analogWrite(enr, mod(r));
+    analogWrite(l1, mod(l));
+    analogWrite(l2, mod(l));
+    analogWrite(r1, mod(r));
+    analogWrite(r2, mod(r));
   }
 }
 
